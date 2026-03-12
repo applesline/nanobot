@@ -3,10 +3,10 @@
 set -e
 
 cd ~
-mkdir -p ./.nanobot ./workspace
+mkdir -p ./.nanobot
 
-chown -R 1000:1000 ./.nanobot ./workspace
-chmod 700 ./nanobot ./workspace
+chown -R 1000:1000 ./.nanobot
+chmod 700 ./nanobot
 
 if [ ! -f ./.nanobot/config.json ]; then
     echo "$(pwd)/.nanobot/config.json file not exist!"
