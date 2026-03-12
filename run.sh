@@ -2,46 +2,22 @@
 
 set -e
 
-mkdir -p ./config ./workspace
+cd ~
+mkdir -p ./.nanobot ./workspace
 
-chown -R 1000:1000 ./config ./workspace
-chmod 750 ./config ./workspace
+chown -R 1000:1000 ./.nanobot ./workspace
+chmod 700 ./nanobot ./workspace
 
-if [ ! -f ./config/config.json ]; then
-    cat > ./config/config.json << EOF
-{
-  "providers": {
-    "openrouter": {
-      "apiKey": "YOUR_API_KEY_HERE"
-    }
-  },
-  "agents": {
-    "defaults": {
-      "model": "anthropic/claude-3.5-sonnet"
-    }
-  },
-  "tools": {
-    "restrictToWorkspace": true
-  }
-}
-EOF
-    echo "Add your API key in ./config/config.json"
+if [ ! -f ./.nanobot/config.json ]; then
+    echo "$(pwd)/.nanobot/config.json file not exist!"
+    return
 fi
 
-docker build -t nanobot:secured .
+cd ~/nanobot
 
-echo "Start Nanobot container..."
+echo "Build docker image with name nanobot"
+docker build -t nanobot .
 
-docker run -d \
-  --name nanobot \
-  --user 1000:1000 \                    
-  --read-only \                           
-  --tmpfs /tmp \                           
-  --tmpfs /home/nanobot/.nanobot/tmp \     
-  --cap-drop ALL \                         
-  --security-opt no-new-privileges:true \  
-  -p 127.0.0.1:18790:18790 \               
-  -v $(pwd)/config:/home/nanobot/.nanobot:ro \  
-  -v $(pwd)/workspace:/app/workspace:rw \        
-  nanobot:secured \
-  gateway
+echo "Start nanobot container..."
+
+docker run -d  --name nanobot --user 1000:1000  --read-only --tmpfs /tmp:size=64m --cap-drop ALL  --security-opt no-new-privileges:true  -v ~/.nanobot:/home/nanobot/.nanobot:rw  nanobot  gateway
